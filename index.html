@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080a12" />
+  <title>FutureMe — Model what comes next</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#f4f6fc, #080a12);
+      --surface: light-dark(rgba(255,255,255,.78), rgba(18,22,36,.72));
+      --surface-strong: light-dark(#ffffff, #111525);
+      --surface-soft: light-dark(rgba(234,239,251,.8), rgba(255,255,255,.035));
+      --text: light-dark(#101522, #f4f6ff);
+      --muted: light-dark(#626d84, #929bb2);
+      --line: light-dark(rgba(25,38,67,.13), rgba(195,207,255,.12));
+      --line-strong: light-dark(rgba(25,38,67,.23), rgba(195,207,255,.23));
+      --blue: #82b7ff;
+      --cyan: #61f2e2;
+      --violet: #a99aff;
+      --pink: #f0a2ff;
+      --good: #69e6bb;
+      --warning: #ffc98a;
+      --shadow: 0 24px 80px rgba(0,0,0,.22);
+      --radius: 26px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    .app-root { background-color: var(--bg); color: var(--text); min-height: 100vh; width: 100%; overflow: hidden; position: relative; border-radius: 0; isolation: isolate; }
+    .app-root::before { content: ""; position: absolute; inset: 0 0 auto; height: 900px; z-index: -2; background: radial-gradient(ellipse at 77% 16%, rgba(81,111,255,.16), transparent 32%), radial-gradient(ellipse at 15% 23%, rgba(64,231,218,.10), transparent 28%), radial-gradient(ellipse at 62% 60%, rgba(164,99,255,.08), transparent 34%); pointer-events: none; }
+    .grain { position: absolute; inset: 0; z-index: -1; opacity: .10; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E"); }
+    .container { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+    .nav-wrap { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(22px); border-bottom: 1px solid var(--line); background: light-dark(rgba(244,246,252,.85), rgba(8,10,18,.72)); }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 76px; gap: 18px; }
+    .brand { display: flex; align-items: center; gap: 11px; letter-spacing: -.04em; font-size: 18px; font-weight: 770; }
+    .brand-mark { width: 29px; height: 29px; border-radius: 9px; position: relative; display: grid; place-items: center; background: linear-gradient(145deg, rgba(97,242,226,.22), rgba(130,183,255,.13)); border: 1px solid rgba(130,183,255,.45); box-shadow: 0 0 26px rgba(97,180,255,.12); }
+    .brand-mark::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan), 0 0 25px rgba(97,242,226,.8); }
+    .brand span { color: var(--muted); font-weight: 500; letter-spacing: -.015em; margin-left: 2px; }
+    .nav-links { display: flex; gap: 28px; align-items: center; color: var(--muted); font-size: 13px; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .button { border: 1px solid var(--line-strong); border-radius: 999px; padding: 12px 18px; color: var(--text); background: transparent; font-size: 13px; font-weight: 650; display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease; }
+    .button:hover { transform: translateY(-2px); border-color: rgba(130,183,255,.6); }
+    .button.primary { background: linear-gradient(100deg, #a6d8ff, #8cebe2 70%, #c7b9ff); color: #07111a; border: 0; box-shadow: 0 10px 36px rgba(97,190,226,.14); }
+    .button.primary:hover { box-shadow: 0 14px 42px rgba(97,190,226,.25); }
+    .button .arrow { font-size: 16px; line-height: 10px; }
+    .mobile-menu { display: none; }
+    .hero { min-height: 690px; display: grid; grid-template-columns: 1fr .92fr; gap: 36px; align-items: center; padding-top: 58px; padding-bottom: 72px; position: relative; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; color: var(--muted); font-size: 10px; font-weight: 780; letter-spacing: .17em; text-transform: uppercase; }
+    .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+    h1 { font-size: clamp(48px, 6.2vw, 80px); line-height: .99; letter-spacing: -.075em; font-weight: 650; margin: 23px 0 23px; max-width: 650px; }
+    .gradient-text { background: linear-gradient(105deg, var(--text) 0%, #bddcff 38%, #8cf2df 71%, #b9aaff 100%); color: transparent; -webkit-background-clip: text; background-clip: text; }
+    .hero-copy { max-width: 520px; color: var(--muted); font-size: 16px; line-height: 1.8; }
+    .hero-cta { display: flex; gap: 12px; align-items: center; margin-top: 30px; flex-wrap: wrap; }
+    .micro-proof { margin-top: 37px; display: flex; align-items: center; flex-wrap: wrap; gap: 22px; color: var(--muted); font-size: 11px; }
+    .micro-proof span { display: inline-flex; align-items: center; gap: 7px; }
+    .micro-proof svg { color: var(--cyan); }
+    .hero-visual { position: relative; min-height: 520px; display: grid; place-items: center; perspective: 1000px; }
+    .orb-scene { position: relative; width: min(100%, 490px); aspect-ratio: 1; transform-style: preserve-3d; animation: float 8s ease-in-out infinite; }
+    .orb-halo { position: absolute; inset: 11%; border-radius: 50%; background: radial-gradient(circle, rgba(84,235,225,.15), rgba(73,113,255,.09) 42%, transparent 71%); filter: blur(14px); }
+    .planet { position: absolute; left: 50%; top: 50%; width: 49%; aspect-ratio: 1; transform: translate(-50%,-50%) rotateX(18deg) rotateY(-19deg); border-radius: 50%; background: radial-gradient(circle at 29% 22%, rgba(227,255,255,.95) 0%, rgba(127,222,232,.72) 5%, rgba(94,125,235,.6) 23%, rgba(29,40,96,.92) 54%, #090d25 76%); box-shadow: inset -20px -16px 38px rgba(0,0,0,.68), inset 9px 8px 26px rgba(192,252,255,.30), 0 0 48px rgba(88,168,255,.24), 0 0 120px rgba(114,96,255,.15); overflow: hidden; }
+    .planet::before { content: ""; position: absolute; inset: -15%; border-radius: 50%; background: repeating-linear-gradient(164deg, transparent 0 12px, rgba(152,237,255,.24) 13px 14px, transparent 16px 27px); transform: rotate(-21deg); opacity: .62; }
+    .planet::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 70% 67%, transparent 8%, rgba(0,0,0,.58) 80%); }
+    .orbit { position: absolute; width: 95%; height: 35%; border: 1px solid rgba(231,247,255,.58); border-radius: 50%; left: 2.5%; top: 34%; transform: rotate(-27deg) rotateX(62deg); box-shadow: 0 0 14px rgba(190,225,255,.10); }
+    .orbit::after { content: ""; position: absolute; width: 7px; height: 7px; left: 0; top: 0; border-radius: 50%; background: #f4ffff; box-shadow: 0 0 7px 2px rgba(210,250,255,.88), 0 0 18px 5px rgba(97,190,255,.42); offset-path: ellipse(50% 50% at 50% 50%); offset-distance: 0%; offset-rotate: 0deg; animation: orbit-travel 8s linear infinite; }
+    .orbit.orbit-two { width: 85%; height: 54%; left: 8%; top: 23%; transform: rotate(50deg) rotateX(68deg); border-color: rgba(231,247,255,.36); }
+    .orbit.orbit-two::after { width: 5px; height: 5px; background: #c8fff6; box-shadow: 0 0 7px 2px rgba(127,242,224,.8), 0 0 16px 4px rgba(127,242,224,.32); animation-duration: 11s; animation-delay: -3s; }
+    .orbit.orbit-three { width: 114%; height: 27%; left: -7%; top: 37%; transform: rotate(18deg) rotateX(72deg); border-color: rgba(231,247,255,.28); }
+    .orbit.orbit-three::after { width: 6px; height: 6px; background: #e1dcff; box-shadow: 0 0 7px 2px rgba(178,156,255,.82), 0 0 16px 4px rgba(178,156,255,.35); animation-duration: 13s; animation-delay: -7s; }
+    @keyframes orbit-travel { to { offset-distance: 100%; } }
+    .satellite { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #a8f8ed; box-shadow: 0 0 13px 4px rgba(96,241,224,.4); left: 10%; top: 39%; }
+    .satellite.s2 { width: 5px; height: 5px; left: 80%; top: 22%; background: #bdadff; box-shadow: 0 0 13px 4px rgba(169,154,255,.48); }
+    .satellite.s3 { width: 6px; height: 6px; left: 68%; top: 84%; background: #84bbff; box-shadow: 0 0 13px 4px rgba(132,187,255,.4); }
+    .visual-label { position: absolute; z-index: 3; padding: 13px 15px; background: light-dark(rgba(255,255,255,.82), rgba(13,17,31,.75)); border: 1px solid var(--line-strong); border-radius: 15px; backdrop-filter: blur(18px); box-shadow: 0 12px 40px rgba(0,0,0,.12); min-width: 158px; animation: bob 6s ease-in-out infinite; }
+    .visual-label small { display: block; color: var(--muted); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 7px; }
+    .visual-label strong { font-size: 18px; letter-spacing: -.045em; }
+    .visual-label .tiny { font-size: 10px; color: var(--good); margin-top: 5px; }
+    .label-a { top: 13%; right: -1%; }
+    .label-b { bottom: 13%; left: -1%; animation-delay: -2s; }
+    .label-c { bottom: 18%; right: 0%; min-width: 124px; animation-delay: -4s; }
+    .mini-bars { height: 22px; display: flex; align-items: end; gap: 3px; margin-top: 5px; }
+    .mini-bars i { display: block; width: 5px; border-radius: 3px; background: linear-gradient(var(--cyan), var(--blue)); }
+    .mini-bars i:nth-child(1) { height: 6px; }.mini-bars i:nth-child(2) { height: 11px; }.mini-bars i:nth-child(3) { height: 9px; }.mini-bars i:nth-child(4) { height: 15px; }.mini-bars i:nth-child(5) { height: 13px; }.mini-bars i:nth-child(6) { height: 20px; }.mini-bars i:nth-child(7) { height: 17px; }
+    @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(.8deg); } }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    .scroll-cue { display: flex; align-items: center; gap: 11px; position: absolute; bottom: 19px; left: 0; color: var(--muted); text-transform: uppercase; letter-spacing: .15em; font-size: 9px; }
+    .scroll-cue::before { content: ""; height: 1px; width: 37px; background: linear-gradient(90deg, var(--cyan), transparent); }
+    .ticker { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; background: light-dark(rgba(255,255,255,.45), rgba(255,255,255,.018)); }
+    .ticker-inner { display: flex; justify-content: space-between; align-items: center; gap: 26px; padding: 18px 0; color: var(--muted); text-transform: uppercase; letter-spacing: .14em; font-size: 9px; white-space: nowrap; }
+    .ticker-inner b { color: var(--text); font-weight: 720; }
+    .section { padding: 110px 0; position: relative; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 35px; margin-bottom: 42px; }
+    .kicker { font-size: 10px; font-weight: 780; letter-spacing: .16em; color: var(--cyan); text-transform: uppercase; margin-bottom: 17px; }
+    h2 { font-size: clamp(33px, 4.1vw, 52px); letter-spacing: -.065em; line-height: 1.05; font-weight: 620; margin: 0; }
+    .section-head p { max-width: 400px; font-size: 14px; line-height: 1.8; color: var(--muted); margin: 0; }
+    .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .principle { min-height: 210px; padding: 27px; border-radius: 22px; border: 1px solid var(--line); background: var(--surface); position: relative; overflow: hidden; }
+    .principle::after { content: ""; position: absolute; right: -52px; bottom: -64px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(97,242,226,.11), transparent 70%); }
+    .principle-num { color: var(--muted); font-size: 10px; letter-spacing: .15em; }
+    .principle-icon { width: 43px; height: 43px; border-radius: 14px; border: 1px solid var(--line-strong); display: grid; place-items: center; margin: 20px 0 19px; color: var(--cyan); background: var(--surface-soft); }
+    .principle h3 { margin: 0 0 9px; font-size: 17px; letter-spacing: -.035em; }
+    .principle p { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 0; max-width: 300px; }
+    .simulator-section { padding-top: 95px; }
+    .simulator-shell { border: 1px solid var(--line-strong); border-radius: 30px; background: linear-gradient(135deg, var(--surface), light-dark(rgba(240,245,255,.74), rgba(16,21,37,.82))); overflow: hidden; box-shadow: var(--shadow); }
+    .sim-top { padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); gap: 18px; }
+    .sim-top-left { display: flex; align-items: center; gap: 14px; }
+    .sim-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 13px; background: linear-gradient(145deg, rgba(97,242,226,.17), rgba(130,183,255,.13)); border: 1px solid rgba(130,183,255,.3); color: var(--cyan); }
+    .sim-top h3 { font-size: 17px; letter-spacing: -.04em; margin: 0 0 4px; }
+    .sim-top p { font-size: 11px; color: var(--muted); margin: 0; }
+    .local-tag { font-size: 10px; color: var(--good); display: inline-flex; gap: 7px; align-items: center; white-space: nowrap; }
+    .local-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--good); box-shadow: 0 0 8px var(--good); }
+    .sim-grid { display: grid; grid-template-columns: .95fr 1.05fr; }
+    .form-panel { padding: 30px; border-right: 1px solid var(--line); }
+    .panel-label { display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: .13em; font-size: 10px; font-weight: 770; color: var(--muted); margin-bottom: 24px; }
+    .panel-label span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; background: var(--surface-soft); border: 1px solid var(--line); color: var(--text); font-size: 10px; }
+    .field { margin-bottom: 21px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field label, .field .field-label { display: flex; align-items: center; justify-content: space-between; color: var(--text); font-size: 11px; font-weight: 680; margin-bottom: 9px; gap: 10px; }
+    .field label small, .field .field-label small { color: var(--muted); font-size: 10px; font-weight: 450; }
+    .input, .select, .textarea { width: 100%; color: var(--text); background: light-dark(rgba(246,248,253,.96), rgba(6,9,18,.62)); border: 1px solid var(--line-strong); border-radius: 12px; outline: none; padding: 12px 13px; font-size: 12px; transition: border-color .2s, box-shadow .2s; }
+    .input:focus, .select:focus, .textarea:focus { border-color: rgba(97,190,255,.8); box-shadow: 0 0 0 3px rgba(97,190,255,.1); }
+    .textarea { min-height: 78px; resize: vertical; line-height: 1.6; }
+    .select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 17px) 17px, calc(100% - 12px) 17px; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
+    .range-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: var(--text); font-size: 11px; font-weight: 680; }
+    .range-value { color: var(--cyan); font-variant-numeric: tabular-nums; font-weight: 750; }
+    input[type="range"] { width: 100%; accent-color: #7edfdc; height: 4px; cursor: pointer; margin: 5px 0 2px; }
+    .range-ends { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-top: 5px; }
+    .form-note { display: flex; align-items: flex-start; gap: 9px; color: var(--muted); font-size: 10px; line-height: 1.6; padding: 12px 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-soft); margin: 21px 0; }
+    .form-note svg { flex: 0 0 auto; color: var(--cyan); margin-top: 1px; }
+    .full { width: 100%; padding: 15px 17px; }
+    .form-error { display: none; font-size: 11px; color: #ff8fa1; margin-top: 10px; }
+    .results-panel { padding: 30px; min-width: 0; }
+    .results-head { display: flex; justify-content: space-between; gap: 14px; align-items: start; margin-bottom: 26px; }
+    .results-head h3 { font-size: 20px; letter-spacing: -.055em; margin: 0 0 7px; font-weight: 640; }
+    .results-head p { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 0; }
+    .result-status { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; border-radius: 99px; padding: 7px 10px; border: 1px solid var(--line-strong); color: var(--muted); white-space: nowrap; }
+    .result-status.live { color: var(--good); border-color: rgba(105,230,187,.35); background: rgba(105,230,187,.07); }
+    .goal-card { padding: 21px; border: 1px solid rgba(130,183,255,.25); border-radius: 19px; background: radial-gradient(ellipse at 100% 0%, rgba(126,140,255,.12), transparent 55%), light-dark(rgba(247,250,255,.76), rgba(9,14,29,.62)); margin-bottom: 16px; }
+    .goal-card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; font-size: 9px; }
+    .goal-card-top span:last-child { color: var(--cyan); }
+    .goal-main { display: flex; align-items: baseline; gap: 8px; margin: 15px 0 7px; flex-wrap: wrap; }
+    .goal-main strong { font-size: clamp(28px,3vw,42px); letter-spacing: -.07em; font-weight: 640; }
+    .goal-main span { color: var(--muted); font-size: 11px; }
+    .progress-track { width: 100%; height: 5px; overflow: hidden; border-radius: 99px; background: var(--line-strong); margin-top: 17px; }
+    .progress-fill { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--blue), var(--cyan), var(--violet)); transition: width .7s cubic-bezier(.2,.75,.2,1); }
+    .progress-caption { display: flex; justify-content: space-between; gap: 10px; font-size: 9px; color: var(--muted); margin-top: 8px; }
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+    .metric { padding: 17px 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface-soft); min-width: 0; }
+    .metric .label { text-transform: uppercase; font-size: 9px; letter-spacing: .12em; color: var(--muted); margin-bottom: 11px; }
+    .metric strong { display: block; font-size: 25px; letter-spacing: -.06em; font-weight: 640; margin-bottom: 4px; }
+    .metric small { color: var(--muted); font-size: 10px; line-height: 1.5; display: block; }
+    .scenario-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 11px; font-weight: 720; margin-bottom: 13px; }
+    .scenario-title small { color: var(--muted); font-size: 9px; font-weight: 450; }
+    .scenario-list { display: grid; gap: 9px; }
+    .scenario { padding: 13px 14px; display: grid; grid-template-columns: 94px minmax(0,1fr) 49px; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-soft); }
+    .scenario-name { font-size: 10px; font-weight: 740; }
+    .scenario-name small { display: block; color: var(--muted); font-size: 9px; font-weight: 450; margin-top: 4px; }
+    .scenario-track { background: var(--line-strong); height: 5px; border-radius: 99px; overflow: hidden; }
+    .scenario-track i { display: block; width: 0%; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: width .7s ease; }
+    .scenario:nth-child(1) .scenario-track i { background: #8c9db9; }
+    .scenario:nth-child(3) .scenario-track i { background: linear-gradient(90deg, var(--violet), var(--cyan)); }
+    .scenario-value { text-align: right; font-size: 11px; font-weight: 720; font-variant-numeric: tabular-nums; }
+    .confidence-note { margin: 15px 0 0; padding: 12px 13px; border-left: 2px solid var(--warning); background: rgba(255,201,138,.06); color: var(--muted); font-size: 10px; line-height: 1.65; border-radius: 0 9px 9px 0; }
+    .confidence-note b { color: var(--text); font-weight: 700; }
+    .results-divider { border: 0; height: 1px; background: var(--line); margin: 26px 0; }
+    .milestone-title { font-size: 11px; font-weight: 720; display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+    .milestone-title span { color: var(--muted); font-size: 9px; font-weight: 450; }
+    .milestones { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+    .milestone { border-radius: 13px; border: 1px solid var(--line); padding: 13px 12px; background: var(--surface-soft); }
+    .milestone .day { color: var(--cyan); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+    .milestone strong { font-size: 17px; letter-spacing: -.04em; display: block; margin-bottom: 6px; }
+    .milestone p { font-size: 9px; line-height: 1.5; color: var(--muted); margin: 0; }
+    .plan-section { padding-top: 82px; }
+    .plan-header { display: flex; align-items: end; justify-content: space-between; gap: 25px; margin-bottom: 28px; }
+    .plan-header p { max-width: 430px; color: var(--muted); font-size: 13px; line-height: 1.8; margin: 0; }
+    .plan-layout { display: grid; grid-template-columns: .7fr 1.3fr; gap: 20px; }
+    .plan-summary { border: 1px solid var(--line); background: var(--surface); border-radius: 23px; padding: 26px; display: flex; flex-direction: column; justify-content: space-between; min-height: 320px; }
+    .plan-summary h3 { font-size: 21px; letter-spacing: -.055em; font-weight: 630; margin: 19px 0 12px; }
+    .plan-summary p { color: var(--muted); font-size: 12px; line-height: 1.8; margin: 0; }
+    .summary-stat { display: flex; align-items: center; gap: 12px; margin-top: 27px; padding-top: 19px; border-top: 1px solid var(--line); }
+    .summary-stat strong { font-size: 27px; letter-spacing: -.06em; }
+    .summary-stat span { font-size: 10px; line-height: 1.5; color: var(--muted); }
+    .week-list { border: 1px solid var(--line); border-radius: 23px; background: var(--surface); padding: 12px; }
+    .week { display: grid; grid-template-columns: 75px 1fr 28px; gap: 15px; align-items: start; padding: 20px 17px; border-bottom: 1px solid var(--line); }
+    .week:last-child { border-bottom: 0; }
+    .week-tag { color: var(--cyan); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; padding-top: 4px; }
+    .week h4 { margin: 0 0 7px; font-size: 13px; letter-spacing: -.02em; }
+    .week p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.7; }
+    .week-check { width: 25px; height: 25px; border: 1px solid var(--line-strong); border-radius: 8px; display: grid; place-items: center; color: transparent; background: transparent; transition: .2s; }
+    .week-check.checked { color: #07111a; background: var(--cyan); border-color: var(--cyan); }
+    .week-check svg { width: 13px; height: 13px; }
+    .plan-tools { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; gap: 15px; color: var(--muted); font-size: 10px; }
+    .plan-tools button { font-size: 10px; padding: 9px 12px; }
+    .reality-section { padding: 85px 0 110px; }
+    .reality-card { position: relative; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 28px; padding: 45px; background: radial-gradient(ellipse at 95% 5%, rgba(125,111,255,.16), transparent 40%), radial-gradient(ellipse at 4% 90%, rgba(97,242,226,.1), transparent 36%), var(--surface); display: grid; grid-template-columns: 1fr .8fr; gap: 35px; align-items: center; }
+    .reality-card h2 { max-width: 580px; }
+    .reality-card p { color: var(--muted); font-size: 13px; line-height: 1.85; max-width: 560px; }
+    .truth-list { display: grid; gap: 13px; }
+    .truth-item { display: flex; gap: 12px; align-items: start; font-size: 11px; line-height: 1.65; color: var(--muted); }
+    .truth-item svg { flex: 0 0 auto; color: var(--cyan); margin-top: 1px; }
+    .truth-item b { display: block; color: var(--text); font-size: 12px; margin-bottom: 2px; }
+    footer { border-top: 1px solid var(--line); padding: 24px 0 30px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 18px; color: var(--muted); font-size: 10px; align-items: center; }
+    .footer-right { display: flex; gap: 18px; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 100; padding: 12px 16px; background: light-dark(#101522, #e6f8ff); color: light-dark(#fff, #07111a); border-radius: 12px; box-shadow: var(--shadow); font-size: 12px; transition: .25s; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    /* Deeper liquid-glass treatment across the entire interface */
+    .nav-wrap { background: light-dark(rgba(244,246,252,.68), rgba(8,10,18,.56)); backdrop-filter: blur(30px) saturate(175%); -webkit-backdrop-filter: blur(30px) saturate(175%); }
+    .button, .visual-label, .principle, .simulator-shell, .goal-card, .metric, .scenario, .milestone, .plan-summary, .week-list, .reality-card, .form-note { backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); }
+    .principle, .metric, .scenario, .milestone, .plan-summary, .week-list { background: light-dark(rgba(255,255,255,.48), rgba(20,26,45,.42)); border-color: light-dark(rgba(255,255,255,.78), rgba(190,215,255,.17)); box-shadow: inset 0 1px 0 light-dark(rgba(255,255,255,.85), rgba(255,255,255,.09)), 0 12px 38px rgba(0,0,0,.07); transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease, background .28s ease; }
+    .principle:hover, .metric:hover, .scenario:hover, .milestone:hover, .plan-summary:hover { transform: translateY(-3px); border-color: rgba(97,242,226,.4); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 48px rgba(40,100,170,.13); }
+    .simulator-shell { background: linear-gradient(135deg, light-dark(rgba(255,255,255,.62), rgba(18,24,43,.62)), light-dark(rgba(224,239,255,.48), rgba(13,19,37,.52))); border-color: light-dark(rgba(255,255,255,.85), rgba(167,206,255,.25)); box-shadow: inset 0 1px 0 light-dark(rgba(255,255,255,.95), rgba(255,255,255,.12)), 0 30px 100px rgba(0,0,0,.19), 0 0 70px rgba(97,190,255,.06); }
+    .form-panel { background: light-dark(rgba(255,255,255,.2), rgba(4,8,19,.13)); }
+    .input, .select, .textarea { background: light-dark(rgba(255,255,255,.62), rgba(6,9,18,.38)); border-color: light-dark(rgba(255,255,255,.88), rgba(176,204,255,.22)); box-shadow: inset 0 1px 0 light-dark(rgba(255,255,255,.95), rgba(255,255,255,.05)); backdrop-filter: blur(14px); }
+    .input:focus, .select:focus, .textarea:focus { background: light-dark(rgba(255,255,255,.92), rgba(14,22,40,.86)); box-shadow: 0 0 0 3px rgba(97,190,255,.13), 0 0 28px rgba(97,190,255,.08); }
+    .goal-card { background: radial-gradient(ellipse at 100% 0%, rgba(126,140,255,.2), transparent 55%), light-dark(rgba(255,255,255,.56), rgba(9,14,29,.43)); box-shadow: inset 0 1px 0 light-dark(rgba(255,255,255,.85), rgba(255,255,255,.08)); }
+    .visual-label { background: light-dark(rgba(255,255,255,.58), rgba(13,17,31,.48)); border-color: light-dark(rgba(255,255,255,.9), rgba(195,220,255,.26)); box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 18px 55px rgba(0,0,0,.15); }
+    .week { transition: background .25s ease, border-color .25s ease; border-radius: 13px; }
+    .week:has(.week-check.checked) { background: light-dark(rgba(97,242,226,.12), rgba(97,242,226,.07)); }
+    .week-check { backdrop-filter: blur(12px); }
+    .button:focus-visible, .week-check:focus-visible, a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+    .live-hint { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--muted); font-size: 10px; }
+    .live-hint::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); animation: pulse 1.8s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .35; box-shadow: 0 0 2px var(--cyan); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr .85fr; gap: 10px; min-height: 610px; }
+      .hero-visual { min-height: 420px; }
+      .label-a { right: -4%; }.label-b { left: -6%; }.label-c { right: -4%; }
+      .sim-grid { grid-template-columns: 1fr; }
+      .form-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .plan-layout { grid-template-columns: 1fr; }
+      .plan-summary { min-height: unset; }
+      .reality-card { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 650px) {
+      .container { width: min(100% - 30px, 540px); }
+      .nav { height: 65px; }
+      .nav-links { display: none; }
+      .nav-actions .button:not(.primary) { display: none; }
+      .nav-actions .button.primary { padding: 10px 13px; font-size: 11px; }
+      .brand { font-size: 16px; }
+      .hero { display: flex; flex-direction: column; align-items: stretch; padding-top: 55px; padding-bottom: 59px; gap: 5px; }
+      h1 { font-size: clamp(47px, 13vw, 67px); }
+      .hero-copy { font-size: 14px; }
+      .hero-visual { min-height: 350px; margin-top: 4px; }
+      .orb-scene { width: min(100%, 360px); }
+      .visual-label { min-width: 127px; padding: 10px 12px; }
+      .visual-label strong { font-size: 16px; }
+      .label-a { top: 12%; right: -1%; }.label-b { bottom: 10%; left: -1%; }.label-c { bottom: 16%; right: -1%; }
+      .scroll-cue { display: none; }
+      .ticker-inner { justify-content: flex-start; overflow-x: auto; gap: 27px; }
+      .section { padding: 72px 0; }
+      .section-head, .plan-header { display: block; }
+      .section-head p, .plan-header p { margin-top: 18px; }
+      .principles { grid-template-columns: 1fr; }
+      .principle { min-height: 180px; }
+      .sim-top { padding: 19px 18px; align-items: start; }
+      .local-tag { display: none; }
+      .form-panel, .results-panel { padding: 20px 17px; }
+      .field-row { gap: 10px; }
+      .field label { align-items: flex-start; }
+      .scenario { grid-template-columns: 77px minmax(0,1fr) 42px; gap: 8px; padding: 12px 10px; }
+      .scenario-name { font-size: 9px; }
+      .metric strong { font-size: 23px; }
+      .milestones { gap: 6px; }
+      .milestone { padding: 11px 8px; }
+      .milestone strong { font-size: 15px; }
+      .milestone p { font-size: 8px; }
+      .week { grid-template-columns: 52px 1fr 25px; gap: 9px; padding: 17px 9px; }
+      .week-tag { font-size: 8px; }
+      .reality-card { padding: 26px 21px; }
+      .footer-inner { flex-direction: column; align-items: start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-root" id="top">
+    <div class="grain" aria-hidden="true"></div>
+    <header class="nav-wrap">
+      <div class="container nav">
+        <a class="brand" href="#top" aria-label="Future Me home"><span class="brand-mark"></span>Future Me<span>/ Lab</span></a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="#method">The method</a>
+          <a href="#simulator">Simulator</a>
+          <a href="#plan">30-day plan</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="button" href="#method">How it works</a>
+          <a class="button primary" href="#simulator">Run simulation <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </header>
+
+    <section class="container hero">
+      <div class="hero-content">
+        <div class="eyebrow"><span class="dot"></span> Personal trajectory engine <span style="opacity:.42">/ 001</span></div>
+        <h1>Meet the future.<br /><span class="gradient-text">Then build it.</span></h1>
+        <p class="hero-copy">A clearer view of where your habits are taking you. Model a goal against your real time, skills, resources and routines—then turn the most useful scenario into a 30-day experiment.</p>
+        <div class="hero-cta">
+          <a class="button primary" href="#simulator">Build my trajectory <span class="arrow">↗</span></a>
+          <a class="button" href="#method"><span style="font-size:15px">▷</span> Explore the method</a>
+        </div>
+        <div class="micro-proof">
+          <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 7.7 7.5 9.5 4.4-1.8 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.1 2.1 4.4-4.5"/></svg> Built around your inputs</span>
+          <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 30-day action loop</span>
+          <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg> No black-box certainty</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="Animated abstract planetary model">
+        <div class="orb-scene">
+          <div class="orb-halo"></div>
+          <div class="orbit"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
+          <div class="planet"></div><span class="satellite"></span><span class="satellite s2"></span><span class="satellite s3"></span>
+          <div class="visual-label label-a"><small>Trajectory signal</small><strong>+18.4<span style="font-size:11px;color:var(--muted);font-weight:500">% / cycle</span></strong><div class="tiny">↗ Direction, not destiny</div></div>
+          <div class="visual-label label-b"><small>Inputs in focus</small><strong>Habits × time</strong><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="visual-label label-c"><small>Planning window</small><strong>30 days</strong><div class="tiny">One testable next step</div></div>
+        </div>
+      </div>
+      <div class="scroll-cue">Scroll to shape your next chapter</div>
+    </section>
+
+    <div class="ticker"><div class="container ticker-inner"><span><b>01</b> Personal inputs</span><span>✳</span><span><b>02</b> Three scenarios</span><span>✳</span><span><b>03</b> Measurable milestones</span><span>✳</span><span><b>04</b> A plan you can test</span></div></div>
+
+    <section class="section" id="method">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">Not fortune-telling. Feedback.</div><h2>Your choices leave a signal.</h2></div>
+          <p>FutureMe combines what you want with what you can reliably do. It makes assumptions visible so you can challenge them, change them, and improve the plan.</p>
+        </div>
+        <div class="principles">
+          <article class="principle reveal"><div class="principle-num">01 / INPUTS</div><div class="principle-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c.6-3.4 3.1-5.2 7-5.2s6.4 1.8 7 5.2"/><path d="M19 4v4M17 6h4"/></svg></div><h3>Your actual starting point</h3><p>Time, consistency, focus, skills, sleep and weekly resources shape the scenario. Better inputs make a better plan—not a guarantee.</p></article>
+          <article class="principle reveal"><div class="principle-num">02 / SCENARIOS</div><div class="principle-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/><path d="M16 6h4v4"/></svg></div><h3>Ranges, not guarantees</h3><p>Compare conservative, base and stretch paths. The range is a planning heuristic, explicitly not a scientifically validated probability.</p></article>
+          <article class="principle reveal"><div class="principle-num">03 / ACTION</div><div class="principle-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h14v17l-7-4-7 4V4Z"/><path d="m8 10 2.3 2.3L16 7"/></svg></div><h3>Make the next month count</h3><p>A practical 30-day loop helps you log evidence, remove a bottleneck, and rerun the model against what really happened.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section simulator-section" id="simulator">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">The simulation lab / 01</div><h2>Start with your reality.</h2></div>
+          <p>Choose one outcome you care about. The more honest your baseline, the more useful your next-step plan will be.</p>
+        </div>
+        <div class="simulator-shell reveal">
+          <div class="sim-top">
+            <div class="sim-top-left"><div class="sim-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/><path d="m16.6 7.4 3-3M17.5 4.4h2.1v2.1"/></svg></div><div><h3>Personal trajectory model</h3><p>Adjust the variables. Run the model. Keep what is useful.</p></div></div>
+            <div class="local-tag">Runs in this preview</div>
+          </div>
+          <div class="sim-grid">
+            <form class="form-panel" id="simulationForm">
+              <div class="panel-label"><span>A</span> Define your destination</div>
+              <div class="field">
+                <label for="goal">What are you working toward?</label>
+                <input class="input" id="goal" name="goal" maxlength="90" value="Build a consistent learning routine" required />
+              </div>
+              <div class="field-row">
+                <div class="field"><label for="category">Goal category</label><select class="select" id="category"><option value="study">Study / exams</option><option value="career">Career / skills</option><option value="creator">Creative / business</option><option value="finance">Personal finance</option><option value="fitness">Fitness / wellbeing</option><option value="general">Other goal</option></select></div>
+                <div class="field"><label for="timeline">Time horizon</label><select class="select" id="timeline"><option value="12">12 weeks</option><option value="24" selected>24 weeks</option><option value="52">52 weeks</option></select></div>
+              </div>
+              <div class="field-row">
+                <div class="field"><label for="baseline">Current baseline</label><input class="input" type="number" id="baseline" min="0" max="1000000000" step="any" value="3" required /></div>
+                <div class="field"><label for="target">Target</label><input class="input" type="number" id="target" min="0" max="1000000000" step="any" value="8" required /></div>
+              </div>
+              <div class="field"><label for="unit">What do these numbers measure? <small>e.g. focused hours/day</small></label><input class="input" id="unit" maxlength="32" value="focused hours per day" required /></div>
+
+              <div class="panel-label" style="margin-top:30px"><span>B</span> Map your current habits</div>
+              <div class="field">
+                <div class="range-head"><label for="hours">Focused time available / week</label><span class="range-value" id="hoursValue">18 hours</span></div>
+                <input type="range" id="hours" min="1" max="60" step="1" value="18" /><div class="range-ends"><span>1 hour</span><span>60 hours</span></div>
+              </div>
+              <div class="field">
+                <div class="range-head"><label for="consistency">Routine consistency</label><span class="range-value" id="consistencyValue">65%</span></div>
+                <input type="range" id="consistency" min="10" max="100" step="5" value="65" /><div class="range-ends"><span>Often interrupted</span><span>Highly consistent</span></div>
+              </div>
+              <div class="field-row">
+                <div class="field"><label for="skill">Current skill / readiness <small>1–10</small></label><input class="input" type="number" id="skill" min="1" max="10" value="5" required /></div>
+                <div class="field"><label for="sleep">Average sleep <small>hours/night</small></label><input class="input" type="number" id="sleep" min="3" max="12" step="0.5" value="7" required /></div>
+              </div>
+              <div class="field">
+                <div class="range-head"><label for="distraction">High-distraction time / day</label><span class="range-value" id="distractionValue">2.5 hours</span></div>
+                <input type="range" id="distraction" min="0" max="8" step="0.5" value="2.5" /><div class="range-ends"><span>0 hours</span><span>8+ hours</span></div>
+              </div>
+              <div class="field">
+                <div class="range-head"><label for="budget">Weekly budget / resources</label><span class="range-value" id="budgetValue">₹1,000</span></div>
+                <input type="range" id="budget" min="0" max="10000" step="250" value="1000" /><div class="range-ends"><span>₹0</span><span>₹10,000+</span></div>
+              </div>
+              <div class="field"><label for="constraint">The biggest constraint right now <small>Optional</small></label><textarea class="textarea" id="constraint" maxlength="300" placeholder="e.g. phone distractions, limited budget, uneven schedule…">Phone distractions and an uneven schedule</textarea></div>
+              <div class="form-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>Honest-model note:</b> enter your real numbers. If you do not know your pace, this prototype uses a cautious planning assumption and tells you which parts need real-world validation.</span></div>
+              <button class="button primary full" type="submit">Generate my scenarios <span class="arrow">↗</span></button>
+              <div class="live-hint">Live model · change any input to update your trajectory</div>
+              <div class="form-error" id="formError" role="alert">Check that the target is different from your baseline and all values are valid.</div>
+            </form>
+
+            <div class="results-panel" id="resultsPanel" aria-live="polite">
+              <div class="results-head"><div><h3>Your trajectory, at a glance</h3><p id="resultGoal">Build a consistent learning routine · 24-week window</p></div><span class="result-status" id="resultStatus">Demo model</span></div>
+              <div class="goal-card">
+                <div class="goal-card-top"><span>Base-case projection</span><span id="baseProjectionLabel">Illustrative</span></div>
+                <div class="goal-main"><strong id="baseProjection">4.8</strong><span id="projectionUnit">focused hours per day</span></div>
+                <div style="font-size:10px;color:var(--muted)" id="projectionSub">+1.8 from your starting baseline</div>
+                <div class="progress-track"><div class="progress-fill" id="mainProgress" style="width:36%"></div></div>
+                <div class="progress-caption"><span>Starting point: <b id="baselineText">3</b></span><span><b id="progressText">36%</b> of target gap modelled</span><span>Target: <b id="targetText">8</b></span></div>
+              </div>
+              <div class="metric-grid">
+                <div class="metric"><div class="label">Execution readiness</div><strong id="readiness">62<span style="font-size:13px;color:var(--muted)">/100</span></strong><small id="readinessCaption">Good foundations, one bottleneck to fix.</small></div>
+                <div class="metric"><div class="label">Plan-fit band*</div><strong id="probability">34–48%</strong><small>Heuristic range · not calibrated odds</small></div>
+              </div>
+              <div class="scenario-title"><span>Three paths to compare</span><small>Modelled target-gap progress</small></div>
+              <div class="scenario-list">
+                <div class="scenario"><div class="scenario-name">Conservative<small>More friction</small></div><div class="scenario-track"><i id="lowBar" style="width:24%"></i></div><div class="scenario-value" id="lowValue">24%</div></div>
+                <div class="scenario"><div class="scenario-name">Base case<small>Current routine</small></div><div class="scenario-track"><i id="baseBar" style="width:36%"></i></div><div class="scenario-value" id="baseValue">36%</div></div>
+                <div class="scenario"><div class="scenario-name">Stretch<small>Strong follow-through</small></div><div class="scenario-track"><i id="highBar" style="width:49%"></i></div><div class="scenario-value" id="highValue">49%</div></div>
+              </div>
+              <p class="confidence-note"><b>Read this correctly:</b> these are illustrative scenario estimates generated from your entered assumptions—not empirical probabilities or promises about the future. Domain-specific outcomes need real progress data to calibrate them.</p>
+              <hr class="results-divider" />
+              <div class="milestone-title">Milestones to check against reality <span>Auto-updates from your inputs</span></div>
+              <div class="milestones">
+                <div class="milestone"><div class="day">Day 07</div><strong id="mile7">+0.2</strong><p id="mile7Text">Create a repeatable baseline.</p></div>
+                <div class="milestone"><div class="day">Day 14</div><strong id="mile14">+0.5</strong><p id="mile14Text">Measure consistency twice.</p></div>
+                <div class="milestone"><div class="day">Day 30</div><strong id="mile30">+1.0</strong><p id="mile30Text">Review evidence and reset pace.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section plan-section" id="plan">
+      <div class="container">
+        <div class="plan-header reveal"><div><div class="kicker">The action layer / 02</div><h2>Turn the model into<br /><span class="gradient-text">a 30-day experiment.</span></h2></div><p>A forecast is only a hypothesis. The plan gives you a small set of actions and checkpoints that generate real evidence for your next run.</p></div>
+        <div class="plan-layout reveal">
+          <aside class="plan-summary">
+            <div><div class="eyebrow"><span class="dot"></span> Your operating system</div><h3 id="planGoalTitle">Build a consistent learning routine</h3><p id="planSummaryText">Protect repeatable focus time, reduce friction and compare actual weekly progress with the base-case path.</p></div>
+            <div class="summary-stat"><strong id="dailyHours">2.6h</strong><span>suggested focused time per day<br />based on your weekly availability</span></div>
+          </aside>
+          <div>
+            <div class="week-list" id="weekList">
+              <div class="week"><div class="week-tag">Week 01</div><div><h4>Measure the baseline</h4><p>Track your starting metric for seven days and make one distraction harder to access.</p></div><button class="week-check" type="button" aria-label="Mark week 1 complete" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg></button></div>
+              <div class="week"><div class="week-tag">Week 02</div><div><h4>Make the habit repeatable</h4><p>Choose small focus blocks, schedule them in advance, and note what interrupts them.</p></div><button class="week-check" type="button" aria-label="Mark week 2 complete" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg></button></div>
+              <div class="week"><div class="week-tag">Week 03</div><div><h4>Use a feedback checkpoint</h4><p>Run a small test, review what worked and adjust the plan using evidence rather than mood.</p></div><button class="week-check" type="button" aria-label="Mark week 3 complete" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg></button></div>
+              <div class="week"><div class="week-tag">Week 04</div><div><h4>Review and recalibrate</h4><p>Compare actual change with the base scenario. Keep the useful parts, lower the friction and set the next 30-day target.</p></div><button class="week-check" type="button" aria-label="Mark week 4 complete" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg></button></div>
+            </div>
+            <div class="plan-tools"><span id="checkProgress">0 of 4 checkpoints complete</span><button class="button" type="button" id="resetChecks">Reset checklist</button><button class="button" type="button" id="downloadPlan">Export plan ↗</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reality-section">
+      <div class="container">
+        <div class="reality-card reveal">
+          <div><div class="kicker">Designed for clear-eyed ambition</div><h2>Useful enough to act on.<br /><span class="gradient-text">Honest enough to trust.</span></h2><p>FutureMe is a decision-support concept, not a fortune teller. The prototype uses a transparent heuristic to turn inputs into scenarios and milestones. It does not connect to an AI model, verify your data, or predict personal outcomes with scientifically validated accuracy.</p><a href="#simulator" class="button primary" style="margin-top:13px">Refine my simulation <span class="arrow">↗</span></a></div>
+          <div class="truth-list">
+            <div class="truth-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg><div><b>Assumptions stay visible</b> Every modelled range should be treated as a hypothesis to test, not a fact.</div></div>
+            <div class="truth-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg><div><b>Progress outranks prediction</b> Real weekly results should replace generic starting assumptions over time.</div></div>
+            <div class="truth-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg><div><b>Your inputs stay in this preview</b> This demo performs calculations in the browser and has no backend or account connection.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer><div class="container footer-inner"><div class="brand"><span class="brand-mark"></span>Future Me<span>/ Lab</span></div><div>Model assumptions. Measure the outcome. Update the plan.</div><div class="footer-right"><a href="#method">Method</a><a href="#simulator">Simulator</a><a href="#top">Back to top ↑</a></div></div></footer>
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const form = $('simulationForm');
+      const numberFormat = (n) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: 1 }).format(n);
+      const formatINR = (n) => '₹' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(n);
+      let currentModel = null;
+      let toastTimer;
+
+      function showToast(message) {
+        const toast = $('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+      }
+      function updateRangeLabels() {
+        $('hoursValue').textContent = $('hours').value + ' hours';
+        $('consistencyValue').textContent = $('consistency').value + '%';
+        $('distractionValue').textContent = numberFormat(Number($('distraction').value)) + ' hours';
+        $('budgetValue').textContent = formatINR(Number($('budget').value));
+      }
+      ['hours','consistency','distraction','budget'].forEach(id => $(id).addEventListener('input', updateRangeLabels));
+
+      function buildModel() {
+        const baseline = Number($('baseline').value);
+        const target = Number($('target').value);
+        const hours = Number($('hours').value);
+        const consistency = Number($('consistency').value) / 100;
+        const skill = Number($('skill').value);
+        const sleep = Number($('sleep').value);
+        const distraction = Number($('distraction').value);
+        const budget = Number($('budget').value);
+        const weeks = Number($('timeline').value);
+        const category = $('category').value;
+        const goal = $('goal').value.trim() || 'Your next goal';
+        const unit = $('unit').value.trim() || 'units';
+        if (![baseline,target,hours,consistency,skill,sleep,distraction,budget,weeks].every(Number.isFinite) || target === baseline || target < 0 || baseline < 0 || skill < 1 || skill > 10 || sleep < 3 || sleep > 12) return null;
+
+        // Explicit planning heuristic. No outcomes or probabilities are empirically calibrated.
+        const focusFactor = Math.max(.52, 1 - distraction * .055);
+        const recoveryFactor = Math.max(.68, 1 - Math.abs(sleep - 7.5) * .075);
+        const timeFactor = Math.min(1.25, Math.sqrt(hours / 18));
+        const skillFactor = .7 + skill * .06;
+        const budgetFactor = category === 'finance' ? .88 + Math.min(.22, budget / 45000) : .88 + Math.min(.12, budget / 18000);
+        const readiness = Math.round(Math.max(8, Math.min(96, 100 * (.31 * consistency + .18 * (hours / 35) + .15 * (skill / 10) + .14 * focusFactor + .12 * recoveryFactor + .10 * Math.min(1,budgetFactor)) / 1.05)));
+        const habitFactor = (.58 + consistency * .62) * skillFactor * focusFactor * recoveryFactor * timeFactor * Math.min(1.14, budgetFactor);
+        const horizonFactor = Math.sqrt(weeks / 24);
+        const categoryBase = ({study: 0.021, career: 0.019, creator: 0.020, finance: 0.016, fitness: 0.022, general: 0.018})[category] || .018;
+        const basePct = Math.max(2, Math.min(96, 100 * (categoryBase * weeks * habitFactor * horizonFactor * 2.15)));
+        const lowPct = Math.max(1, Math.min(basePct, basePct * .68));
+        const highPct = Math.max(basePct, Math.min(100, basePct * 1.34));
+        const gap = target - baseline;
+        const projected = baseline + gap * basePct / 100;
+        // Range is intentionally called a plan-fit band: heuristic, not calibrated probability.
+        const fitScore = Math.max(5, Math.min(91, 10 + basePct * .56 + readiness * .28 - (weeks >= 52 ? 2 : 0)));
+        const probabilityLow = Math.max(5, Math.floor(fitScore - 8));
+        const probabilityHigh = Math.min(95, Math.ceil(fitScore + 8));
+        const milestone = (days) => gap * Math.min(100, basePct * days / (weeks * 7)) / 100;
+        return { baseline,target,hours,consistency,skill,sleep,distraction,budget,weeks,category,goal,unit,readiness,basePct,lowPct,highPct,projected,probabilityLow,probabilityHigh,milestone,focusFactor,recoveryFactor };
+      }
+      const categoryActions = {
+        study: {
+          summary: (m) => `Protect ${numberFormat(m.hours / 7)} focused hours per day on average. Use active recall and timed practice, then compare one weekly score or completion metric with your starting baseline.`,
+          tasks: [
+            ['Measure your starting point', 'Record one comparable baseline: a timed set, topic completion rate or focused study time. Keep the test conditions consistent.'],
+            ['Protect repeatable study blocks', 'Schedule five focused sessions. Put the phone outside arm’s reach and finish each block with active recall—not just rereading.'],
+            ['Test recall under pressure', 'Complete one timed practice set, tag every error by cause, and revisit the three most frequent weak points.'],
+            ['Review your evidence', 'Compare accuracy, completion and consistency with Week 1. Keep the method that moved the metric and set next month’s target.']
+          ]
+        },
+        career: {
+          summary: (m) => `Reserve ${numberFormat(m.hours / 7)} focused hours per day on average. Build one demonstrable skill asset and test it against real job or project requirements each week.`,
+          tasks: [
+            ['Define the evidence of skill', 'Choose one target role or skill rubric. Save a baseline and identify the two highest-priority gaps.'],
+            ['Build a small proof of work', 'Schedule focused blocks to finish one portfolio artifact, project slice or skill exercise. Keep scope deliberately small.'],
+            ['Get external feedback', 'Ask one informed person or compare your work against a credible rubric. Record specific changes, not just a rating.'],
+            ['Ship and recalibrate', 'Publish or document the improved work, compare it with the original rubric, and choose the next skill gap.']
+          ]
+        },
+        creator: {
+          summary: (m) => `Use about ${numberFormat(m.hours / 7)} focused hours daily to ship consistently. Track output and audience response separately so you can distinguish effort from results.`,
+          tasks: [
+            ['Set a measurable baseline', 'Record your current publishing frequency, output count and one signal of quality or audience response.'],
+            ['Ship a minimum viable piece', 'Break the next deliverable into small work sessions. Publish one useful, finished piece rather than endlessly polishing.'],
+            ['Run one distribution test', 'Share the work in one relevant channel. Track clicks, replies or saves without confusing reach with business results.'],
+            ['Repeat what earned evidence', 'Review output quality and response. Keep the strongest format and plan the next four-week cycle.']
+          ]
+        },
+        finance: {
+          summary: (m) => `Use the first 30 days to establish a verified cash-flow baseline. Keep any budget you enter as an available resource—not a forecast of investment returns or future income.`,
+          tasks: [
+            ['Establish cash-flow truth', 'Record actual income, essential costs and discretionary spending. Use statement-backed numbers where possible.'],
+            ['Choose one friction point', 'Identify one recurring cost or decision that can be reviewed safely. Do not assume savings until they appear in the records.'],
+            ['Review the weekly trend', 'Compare planned and actual spending. Note irregular expenses separately instead of hiding them in an average.'],
+            ['Set a sustainable next target', 'Use the month’s observed cash flow to set a realistic buffer or savings goal; avoid promises of market returns.']
+          ]
+        },
+        fitness: {
+          summary: (m) => `Build a repeatable rhythm that respects sleep and recovery. Track a consistent, low-risk metric and adjust the workload if discomfort or fatigue accumulates.`,
+          tasks: [
+            ['Log your starting baseline', 'Record one repeatable metric and current weekly routine. Keep sleep and recovery part of the record.'],
+            ['Create a manageable rhythm', 'Put sessions into the calendar and start below your maximum capacity. Consistency matters more than a dramatic first week.'],
+            ['Review recovery and progress', 'Compare the metric and how you feel after sessions. Reduce intensity if pain, dizziness or unusual symptoms appear.'],
+            ['Choose the next sustainable step', 'Keep the frequency you can recover from and adjust one variable at a time. Seek qualified advice for medical concerns.']
+          ]
+        },
+        general: {
+          summary: (m) => `Protect about ${numberFormat(m.hours / 7)} focused hours each day. Define one observable weekly output and use short reviews to remove whatever repeatedly blocks it.`,
+          tasks: [
+            ['Name the measurable outcome', 'Write down the current baseline, desired target and how you will measure it. If the metric is vague, choose an observable proxy.'],
+            ['Make the next action small', 'Schedule repeatable blocks, prepare the materials ahead of time and remove one common distraction.'],
+            ['Test the plan in real life', 'Review the output once mid-week. Note which assumptions about time, skill or resources were wrong.'],
+            ['Update from evidence', 'Compare actual progress with the starting baseline and revise the plan before increasing the workload.']
+          ]
+        }
+      };
+      function renderModel(m) {
+        currentModel = m;
+        const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + numberFormat(Math.abs(n));
+        $('resultGoal').textContent = `${m.goal} · ${m.weeks}-week window`;
+        $('resultStatus').textContent = 'Inputs updated';
+        $('resultStatus').classList.add('live');
+        $('baseProjection').textContent = numberFormat(m.projected);
+        $('projectionUnit').textContent = m.unit;
+        $('projectionSub').textContent = `${signed(m.projected - m.baseline)} from your baseline · ${numberFormat(m.basePct)}% of the gap modelled`;
+        $('baselineText').textContent = numberFormat(m.baseline);
+        $('targetText').textContent = numberFormat(m.target);
+        $('progressText').textContent = numberFormat(m.basePct) + '%';
+        $('mainProgress').style.width = m.basePct + '%';
+        $('readiness').innerHTML = `${m.readiness}<span style="font-size:13px;color:var(--muted)">/100</span>`;
+        $('readinessCaption').textContent = m.readiness >= 72 ? 'Strong base; protect your consistency.' : m.readiness >= 50 ? 'Some good foundations; fix the biggest friction first.' : 'Start smaller and stabilize the routine before raising the target.';
+        $('probability').textContent = `${m.probabilityLow}–${m.probabilityHigh}%`;
+        [['low',m.lowPct],['base',m.basePct],['high',m.highPct]].forEach(([key,val]) => {
+          $(`${key}Bar`).style.width = `${val}%`;
+          $(`${key}Value`).textContent = `${Math.round(val)}%`;
+        });
+        [7,14,30].forEach(day => {
+          const change = m.milestone(day);
+          $(`mile${day}`).textContent = signed(change);
+          $(`mile${day}Text`).textContent = day === 7 ? 'Establish baseline and complete the first repeatable week.' : day === 14 ? 'Check whether time and consistency assumptions hold.' : 'Compare actual change with the model and recalibrate.';
+        });
+        $('planGoalTitle').textContent = m.goal;
+        $('planSummaryText').textContent = (categoryActions[m.category] || categoryActions.general).summary(m) + ( $('constraint').value.trim() ? ` Biggest constraint to design around: ${$('constraint').value.trim()}.` : '' );
+        $('dailyHours').textContent = numberFormat(m.hours / 7) + 'h';
+        const tasks = (categoryActions[m.category] || categoryActions.general).tasks;
+        const rows = $('weekList').querySelectorAll('.week');
+        rows.forEach((row, i) => {
+          row.querySelector('h4').textContent = tasks[i][0];
+          row.querySelector('p').textContent = tasks[i][1];
+        });
+      }
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const model = buildModel();
+        if (!model) {
+          $('formError').style.display = 'block';
+          showToast('Please check the target and your input values.');
+          return;
+        }
+        $('formError').style.display = 'none';
+        renderModel(model);
+        showToast('Scenario updated from your inputs.');
+        if (window.matchMedia('(max-width: 900px)').matches) $('resultsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      // Keep the lab responsive: every valid edit refreshes the model immediately.
+      let liveUpdateFrame = null;
+      function updateLiveModel() {
+        updateRangeLabels();
+        if (liveUpdateFrame) cancelAnimationFrame(liveUpdateFrame);
+        liveUpdateFrame = requestAnimationFrame(() => {
+          const model = buildModel();
+          if (model) {
+            $('formError').style.display = 'none';
+            renderModel(model);
+          } else {
+            $('formError').style.display = 'block';
+            $('resultStatus').textContent = 'Check inputs';
+            $('resultStatus').classList.remove('live');
+          }
+        });
+      }
+      form.querySelectorAll('input, select, textarea').forEach(control => {
+        control.addEventListener('input', updateLiveModel);
+        control.addEventListener('change', updateLiveModel);
+      });
+      $('category').addEventListener('change', () => {
+        const suggested = {
+          study: ['Study / exams', 'focused hours per day'],
+          career: ['Build a career skill', 'completed portfolio projects'],
+          creator: ['Grow a creative project', 'published pieces'],
+          finance: ['Improve my monthly finances', '₹ saved per month'],
+          fitness: ['Build a consistent fitness routine', 'sessions per week'],
+          general: ['Make progress on a personal goal', 'completed milestones']
+        }[$('category').value];
+        $('unit').placeholder = suggested[1];
+        showToast('Category updated. Review your baseline and measurement unit.');
+      });
+      $('weekList').querySelectorAll('.week-check').forEach(button => button.addEventListener('click', () => {
+        const checked = button.classList.toggle('checked');
+        button.setAttribute('aria-pressed', String(checked));
+        const count = $('weekList').querySelectorAll('.week-check.checked').length;
+        $('checkProgress').textContent = `${count} of 4 checkpoints complete`;
+        if (count === 4) showToast('All checkpoints complete. Time to recalibrate your model.');
+      }));
+      $('resetChecks').addEventListener('click', () => {
+        $('weekList').querySelectorAll('.week-check').forEach(button => { button.classList.remove('checked'); button.setAttribute('aria-pressed','false'); });
+        $('checkProgress').textContent = '0 of 4 checkpoints complete';
+        showToast('Checklist reset.');
+      });
+      $('downloadPlan').addEventListener('click', () => {
+        const m = currentModel || buildModel();
+        const model = m || {goal: $('goal').value, weeks: $('timeline').value, baseline: $('baseline').value, target: $('target').value, unit: $('unit').value, hours: $('hours').value};
+        const completed = [...$('weekList').querySelectorAll('.week')].map((row) => `${row.querySelector('.week-check').classList.contains('checked') ? '[x]' : '[ ]'} ${row.querySelector('.week-tag').textContent}: ${row.querySelector('h4').textContent}\n${row.querySelector('p').textContent}`).join('\n\n');
+        const output = `FUTUREME — PERSONAL TRAJECTORY PLAN\n\nGoal: ${model.goal}\nBaseline: ${model.baseline} ${model.unit}\nTarget: ${model.target} ${model.unit}\nTime horizon: ${model.weeks} weeks\nFocused time available: ${model.hours} hours/week\n\nScenario estimate: ${model.basePct ? numberFormat(model.basePct) + '% of the target gap in the selected horizon (base case)' : 'Not calculated'}\nPlan-fit band: ${model.probabilityLow ? `${model.probabilityLow}–${model.probabilityHigh}% (heuristic, not calibrated odds)` : 'Not calculated'}\n\n${completed}\n\nIMPORTANT: These are illustrative planning heuristics, not scientifically calibrated predictions. Compare real progress and recalibrate.\n`;
+        const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'futureme-30-day-plan.txt';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        showToast('Your plan file is ready.');
+      });
+      const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } }), { threshold: .12 });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+      // Subtle pointer-responsive lighting adds depth without blocking controls.
+      document.querySelectorAll('.principle, .metric, .scenario, .milestone, .plan-summary, .visual-label').forEach(card => {
+        card.addEventListener('pointermove', event => {
+          const rect = card.getBoundingClientRect();
+          card.style.backgroundImage = `radial-gradient(circle at ${((event.clientX - rect.left) / rect.width) * 100}% ${((event.clientY - rect.top) / rect.height) * 100}%, rgba(97,242,226,.10), transparent 55%)`;
+        });
+        card.addEventListener('pointerleave', () => { card.style.backgroundImage = ''; });
+      });
+      updateRangeLabels();
+      const initial = buildModel();
+      if (initial) renderModel(initial);
+    })();
+  </script>
+</body>
+</html>
